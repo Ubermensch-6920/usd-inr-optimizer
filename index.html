@@ -92,16 +92,14 @@ function sentAn(hl){const a=hl.join(" ");const bl=scoreT(a,INR_BL),br=scoreT(a,I
   return{score:Math.round(clamped),prob:Math.round(Math.max(15,Math.min(85,50+clamped*.35)))}}
 
 /* ━━ MATH ━━ */
-const cipFwd=(s,rU,rI,mo)=>{const t=mo/12;return s*(1+(rI/100)*t)/(1+(rU/100)*t)};
+const cipFwd=(s,rU,rI,mo)=>{const t=mo/12;return s*Math.pow(1+rI/100,t)/Math.pow(1+rU/100,t)};
 const cl=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 
-// Opportunity cost: what you end up with in INR per $1
-// Convert now: (S - spread) × (1 + myINR × t)
-// Hold USD:    (1 + myUSD × t) × CIP_forward  (assuming CIP holds for forward)
-// But more practically, hold USD = (1 + myUSD × t) × future_spot
-// We use CIP forward as the expected future spot baseline
-const calcConvertNow=(spot,spread,myINR,mo)=>{const t=mo/12;return(spot-spread)*(1+myINR/100*t)};
-const calcHoldUSD=(myUSD,cipFwd,mo)=>{const t=mo/12;return(1+myUSD/100*t)*cipFwd};
+// Opportunity cost: what you end up with in INR per $1 (exponential compounding)
+// Convert now: (S - spread) × (1 + myINR)^t
+// Hold USD:    (1 + myUSD)^t × CIP_forward
+const calcConvertNow=(spot,spread,myINR,mo)=>{const t=mo/12;return(spot-spread)*Math.pow(1+myINR/100,t)};
+const calcHoldUSD=(myUSD,cipFwd,mo)=>{const t=mo/12;return Math.pow(1+myUSD/100,t)*cipFwd};
 
 // Opportunity cost matrix: vary myUSD and myINR
 const buildOCMatrix=(spot,spread,fedR,rbiR,myUSD_base,myINR_base,mo,steps=5,ss=0.5)=>{
@@ -414,15 +412,15 @@ function App(){
       <div className="card">
         <h3 className="card-title">📐 CIP Formula</h3>
         <div className="mono" style={{marginBottom:12}}>
-          F = S × (1 + r<sub>INR_policy</sub> × t) / (1 + r<sub>USD_policy</sub> × t)<br/>
-          F = {aS.toFixed(2)} × (1 + {(aRbi/100).toFixed(4)} × {t.toFixed(4)}) / (1 + {(aFed/100).toFixed(4)} × {t.toFixed(4)})<br/>
+          F = S × (1 + r<sub>INR_policy</sub>)<sup>t</sup> / (1 + r<sub>USD_policy</sub>)<sup>t</sup><br/>
+          F = {aS.toFixed(2)} × (1 + {(aRbi/100).toFixed(4)})<sup>{t.toFixed(4)}</sup> / (1 + {(aFed/100).toFixed(4)})<sup>{t.toFixed(4)}</sup><br/>
           <strong style={{color:"var(--accent)"}}>F = ₹{fwd.toFixed(4)}</strong>
         </div>
         <div className="divider"/>
         <div style={{fontSize:12,color:"var(--sub)",lineHeight:1.6}}>
           <strong style={{color:"var(--teal)"}}>Opportunity cost math:</strong><br/>
-          Convert path: (₹{aS.toFixed(2)} − ₹{spr.toFixed(2)}) × (1 + {myINR.toFixed(1)}% × {t.toFixed(3)}) = <strong style={{color:"var(--text)"}}>₹{myConvert.toFixed(2)}</strong><br/>
-          Hold path: (1 + {myUSD.toFixed(1)}% × {t.toFixed(3)}) × ₹{fwd.toFixed(2)} = <strong style={{color:"var(--text)"}}>₹{myHold.toFixed(2)}</strong>
+          Convert path: (₹{aS.toFixed(2)} − ₹{spr.toFixed(2)}) × (1 + {myINR.toFixed(1)}%)<sup>{t.toFixed(4)}</sup> = <strong style={{color:"var(--text)"}}>₹{myConvert.toFixed(2)}</strong><br/>
+          Hold path: (1 + {myUSD.toFixed(1)}%)<sup>{t.toFixed(4)}</sup> × ₹{fwd.toFixed(2)} = <strong style={{color:"var(--text)"}}>₹{myHold.toFixed(2)}</strong>
         </div>
       </div>
 
@@ -560,3 +558,4 @@ function App(){
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
+</html>
