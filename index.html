@@ -141,8 +141,8 @@ const heatCol=(val,mn,mx)=>{
 async function fetchProxy(url){const r=await fetch(CORS+encodeURIComponent(url));if(!r.ok)throw new Error(`Proxy ${r.status}`);const d=await r.json();return d.contents}
 
 async function scrapeSpot(){
- /* try{const r=await fetch("https://open.exchangerate-api.com/v6/latest/USD");if(r.ok){const d=await r.json();if(d?.rates?.INR)return{rate:d.rates.INR,src:"ExchangeRate API"}}}catch{} */
-  /* try{const r=await fetch("https://api.frankfurter.app/latest?from=USD&to=INR");if(r.ok){const d=await r.json();if(d?.rates?.INR)return{rate:d.rates.INR,src:"Frankfurter (ECB)"}}}catch{} */
+ try{const r=await fetch("https://open.exchangerate-api.com/v6/latest/USD");if(r.ok){const d=await r.json();if(d?.rates?.INR)return{rate:d.rates.INR,src:"ExchangeRate API"}}}catch{}
+  try{const r=await fetch("https://api.frankfurter.app/latest?from=USD&to=INR");if(r.ok){const d=await r.json();if(d?.rates?.INR)return{rate:d.rates.INR,src:"Frankfurter (ECB)"}}}catch{}
   try{const html=await fetchProxy("https://www.x-rates.com/calculator/?from=USD&to=INR&amount=1");const m=html.match(/class="ccOutputRs498"[^>]*>([\d.]+)</);if(m)return{rate:parseFloat(m[1]),src:"X-Rates"}}catch{}
   throw new Error("All spot sources failed")
 }
